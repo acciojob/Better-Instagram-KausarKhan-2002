@@ -24,45 +24,18 @@ draggables.forEach((draggable) => {
 
     // Prevent drop on the same element
     if (draggedElement !== e.target) {
-      // Clone the elements
-      const draggedClone = draggedElement.cloneNode(true);
-      const targetClone = e.target.cloneNode(true);
+      // Swap the elements without cloning
+      const draggedPosition = draggedElement.getBoundingClientRect();
+      const targetPosition = e.target.getBoundingClientRect();
 
-      // Swap the elements
-      draggedElement.replaceWith(targetClone);
-      e.target.replaceWith(draggedClone);
-
-      // Reassign event listeners to the swapped elements
-      reassignEventListeners();
+      // Determine the direction to swap based on proximity
+      if (draggedPosition.top < targetPosition.top) {
+        // If dragged element is above, swap below
+        e.target.insertAdjacentElement('afterend', draggedElement);
+      } else {
+        // If dragged element is below, swap above
+        e.target.insertAdjacentElement('beforebegin', draggedElement);
+      }
     }
   });
 });
-
-// Function to reassign event listeners to new elements
-function reassignEventListeners() {
-  const newDraggables = document.querySelectorAll('.draggable');
-  newDraggables.forEach((draggable) => {
-    draggable.addEventListener('dragstart', (e) => {
-      draggedElement = e.target;
-      e.dataTransfer.effectAllowed = 'move';
-    });
-
-    draggable.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    });
-
-    draggable.addEventListener('drop', (e) => {
-      e.preventDefault();
-      if (draggedElement !== e.target) {
-        const draggedClone = draggedElement.cloneNode(true);
-        const targetClone = e.target.cloneNode(true);
-
-        draggedElement.replaceWith(targetClone);
-        e.target.replaceWith(draggedClone);
-
-        reassignEventListeners();
-      }
-    });
-  });
-}
